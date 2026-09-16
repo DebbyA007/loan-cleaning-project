@@ -74,6 +74,8 @@ log.append(f"Negative income rows: {bad_income}, non-positive loan amount rows: 
 df['TotalIncome'] = df['ApplicantIncome'] + df['CoapplicantIncome']
 df['LoanAmount_Actual'] = df['LoanAmount'] * 1000  # dataset stores this in thousands
 df['Loan_to_Income_Ratio'] = df['LoanAmount_Actual'] / df['TotalIncome'].replace(0, np.nan)
+df['LoanIncomeRatio'] = df['LoanAmount'] / (df['TotalIncome'] / 1000 + 1)
+df['Has_Coapplicant'] = (df['CoapplicantIncome'] > 0).astype(int)
 
 print("CLEAN SHAPE:", df.shape)
 df.to_csv('cleaned_data.csv', index=False)

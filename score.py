@@ -1,17 +1,3 @@
-"""
-Approval Likelihood Scorecard
-------------------------------
-raw_data.csv has NO historical approval/denial outcome, so a trained ML
-classifier cannot be built from this file alone. Instead, this script builds
-a transparent, rule-based scorecard using the same factors underwriters
-typically weigh manually. This mirrors how real lenders score applicants
-BEFORE they have enough labeled history to train a model.
-
-Weights are documented and adjustable -- they are expert-assigned, not
-learned from data. If a real Loan_Status (Approved/Denied) column becomes
-available, replace this scorecard with a trained logistic regression /
-gradient boosting model using the same features.
-"""
 import pandas as pd
 import numpy as np
 
@@ -33,22 +19,22 @@ def ratio_score(ratio):
         return 3
 
 def employment_score(row):
-    # Salaried income is easier to verify than self-employed income
+
     return 10 if row["Self_Employed"] == "No" else 6
 
 def stability_score(row):
     pts = 0
-    pts += 5 if row["Married"] == "Yes" else 2          # dual-income / shared liability
-    pts += 5 if row["Education"] == "Graduate" else 2    # proxy for income stability
-    pts += 5 if row["Dependents"] == "0" else 2          # fewer financial obligations
-    pts += 5 if row["Loan_Amount_Term"] >= 360 else 3    # longer term = smaller installment burden
-    return pts  # max 20
+    pts += 5 if row["Married"] == "Yes" else 2          
+    pts += 5 if row["Education"] == "Graduate" else 2   
+    pts += 5 if row["Dependents"] == "0" else 2          
+    pts += 5 if row["Loan_Amount_Term"] >= 360 else 3    
+    return pts  
 
-df["Score_CreditHistory"] = df["Credit_History_Status"].apply(credit_score)          # 0-40
-df["Score_LoanToIncome"] = df["Loan_to_Income_Ratio"].apply(ratio_score)             # 0-25
-df["Score_Employment"] = df.apply(employment_score, axis=1)                          # 0-10
-df["Score_Stability"] = df.apply(stability_score, axis=1)                            # 0-20
-# max possible = 40+25+10+20 = 95; normalize to 0-100
+df["Score_CreditHistory"] = df["Credit_History_Status"].apply(credit_score)          
+df["Score_LoanToIncome"] = df["Loan_to_Income_Ratio"].apply(ratio_score)            
+df["Score_Employment"] = df.apply(employment_score, axis=1)                          
+df["Score_Stability"] = df.apply(stability_score, axis=1)                            
+
 raw_total = df["Score_CreditHistory"] + df["Score_LoanToIncome"] + df["Score_Employment"] + df["Score_Stability"]
 df["Approval_Likelihood_Score"] = (raw_total / 95 * 100).round(1)
 
